@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { Unbounded } from "next/font/google";
 import "./globals.css";
-
-const unbounded = Unbounded({
-  variable: "--font-unbounded",
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
-});
 
 export const metadata: Metadata = {
   title: "Linguarush - How fast can you identify languages?",
@@ -20,9 +13,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet" />
+      </head>
       <body
-        className={`${unbounded.variable} font-sans antialiased`}
-        style={{ fontFamily: 'var(--font-unbounded), sans-serif' }}
+        className="font-sans antialiased"
+        style={{ fontFamily: 'Unbounded, system-ui, sans-serif' }}
       >
         {children}
       </body>

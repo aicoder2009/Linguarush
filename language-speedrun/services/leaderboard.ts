@@ -12,6 +12,24 @@ const LEADERBOARD_KEY = 'language-sprint-leaderboard';
 const CURRENT_USER_KEY = 'language-sprint-current-user';
 const STREAK_KEY = 'language-sprint-streak';
 
+// Cache leaderboard data to reduce localStorage parsing
+let leaderboardCache: LeaderboardEntry[] | null = null;
+let leaderboardCacheTimestamp = 0;
+const CACHE_TTL = 1000; // 1 second cache TTL
+
+function getCachedLeaderboard(): LeaderboardEntry[] {
+  const now = Date.now();
+  if (leaderboardCache && now - leaderboardCacheTimestamp < CACHE_TTL) {
+    return leaderboardCache;
+  }
+  return [];
+}
+
+function setCachedLeaderboard(data: LeaderboardEntry[]): void {
+  leaderboardCache = data;
+  leaderboardCacheTimestamp = Date.now();
+}
+
 export function getCurrentUser(): string {
   if (typeof window === 'undefined') return 'Anonymous';
 
@@ -85,9 +103,17 @@ export function getCurrentStreak(): number {
 
 export function getLeaderboard(): LeaderboardEntry[] {
   if (typeof window === 'undefined') return [];
+  
+  // Try to return cached data first
+  const cached = getCachedLeaderboard();
+  if (cached.length > 0) return cached;
+  
   const stored = localStorage.getItem(LEADERBOARD_KEY);
   if (!stored) return [];
-  return JSON.parse(stored);
+  
+  const data = JSON.parse(stored);
+  setCachedLeaderboard(data);
+  return data;
 }
 
 export function updateLeaderboard(
@@ -137,6 +163,7 @@ export function updateLeaderboard(
   const topLeaderboard = leaderboard.slice(0, 100);
 
   localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(topLeaderboard));
+  setCachedLeaderboard(topLeaderboard);
 }
 
 export function getPlayerRank(username: string): number {

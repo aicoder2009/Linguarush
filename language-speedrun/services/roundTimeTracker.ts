@@ -16,6 +16,34 @@ export interface SessionData {
 const SESSION_KEY = 'language-sprint-current-session';
 const HISTORY_KEY = 'language-sprint-round-history';
 
+// Cache to reduce localStorage parsing
+let sessionCache: SessionData | null = null;
+let sessionCacheKey: string | null = null;
+
+function getSession(): SessionData | null {
+  if (typeof window === 'undefined') return null;
+  
+  // Return cached session if available and key hasn't changed
+  if (sessionCache && sessionCacheKey === SESSION_KEY) {
+    return sessionCache;
+  }
+  
+  const sessionData = localStorage.getItem(SESSION_KEY);
+  if (!sessionData) return null;
+  
+  sessionCache = JSON.parse(sessionData);
+  sessionCacheKey = SESSION_KEY;
+  return sessionCache;
+}
+
+function saveSession(session: SessionData): void {
+  if (typeof window === 'undefined') return;
+  
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  sessionCache = session;
+  sessionCacheKey = SESSION_KEY;
+}
+
 export function startNewSession(mode: string): void {
   if (typeof window === 'undefined') return;
 
@@ -26,16 +54,14 @@ export function startNewSession(mode: string): void {
     sessionStarted: new Date().toISOString()
   };
 
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  saveSession(session);
 }
 
 export function recordRoundTime(questionIndex: number, timeMs: number): void {
   if (typeof window === 'undefined') return;
 
-  const sessionData = localStorage.getItem(SESSION_KEY);
-  if (!sessionData) return;
-
-  const session: SessionData = JSON.parse(sessionData);
+  const session = getSession();
+  if (!session) return;
 
   session.roundTimes.push({
     questionIndex,
@@ -43,16 +69,14 @@ export function recordRoundTime(questionIndex: number, timeMs: number): void {
     timestamp: new Date().toISOString()
   });
 
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  saveSession(session);
 }
 
 export function getPreviousRoundTime(questionIndex: number): number | null {
   if (typeof window === 'undefined') return null;
 
-  const sessionData = localStorage.getItem(SESSION_KEY);
-  if (!sessionData) return null;
-
-  const session: SessionData = JSON.parse(sessionData);
+  const session = getSession();
+  if (!session) return null;
 
   // Find the most recent round time for this question index (excluding current)
   const previousRounds = session.roundTimes.filter(
@@ -68,10 +92,9 @@ export function getPreviousRoundTime(questionIndex: number): number | null {
 export function getCurrentSessionRoundTime(questionIndex: number): number | null {
   if (typeof window === 'undefined') return null;
 
-  const sessionData = localStorage.getItem(SESSION_KEY);
-  if (!sessionData) return null;
+  const session = getSession();
+  if (!session) return null;
 
-  const session: SessionData = JSON.parse(sessionData);
   const round = session.roundTimes.find(rt => rt.questionIndex === questionIndex);
 
   return round ? round.timeMs : null;
@@ -104,10 +127,8 @@ export function getTimeDifference(currentTime: number, questionIndex: number): {
 export function saveSessionToHistory(): void {
   if (typeof window === 'undefined') return;
 
-  const sessionData = localStorage.getItem(SESSION_KEY);
-  if (!sessionData) return;
-
-  const session: SessionData = JSON.parse(sessionData);
+  const session = getSession();
+  if (!session) return;
 
   // Get existing history
   const historyData = localStorage.getItem(HISTORY_KEY);
@@ -125,6 +146,8 @@ export function saveSessionToHistory(): void {
 export function clearCurrentSession(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(SESSION_KEY);
+  sessionCache = null;
+  sessionCacheKey = null;
 }
 
 export function formatTimeDifference(differenceMs: number): string {

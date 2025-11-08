@@ -1,4 +1,4 @@
-import { languages, type Language } from '../data/languages';
+import { languages } from '../data/languages';
 
 export interface Question {
   id: number;
@@ -6,6 +6,16 @@ export interface Question {
   correctAnswer: string;
   acceptableAnswers: string[];
   timestamp: number;
+}
+
+// Fisher-Yates shuffle algorithm - O(n) instead of O(n log n)
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 export function generateQuestions(mode: string, difficulty: string = 'medium'): Question[] {
@@ -27,7 +37,7 @@ export function generateQuestions(mode: string, difficulty: string = 'medium'): 
     );
   }
 
-  const shuffled = availableLanguages.sort(() => Math.random() - 0.5);
+  const shuffled = shuffleArray(availableLanguages);
   const selected = shuffled.slice(0, Math.min(count, availableLanguages.length));
 
   return selected.map((lang, index) => {

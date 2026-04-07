@@ -16,6 +16,7 @@ export interface PersonalBests {
   timeattack?: ModeStats;
   endless?: ModeStats;
   perfect?: ModeStats;
+  zen?: ModeStats;
   totalGamesPlayed?: number;
   lastPlayed?: string;
 }
@@ -92,6 +93,21 @@ export function saveScore(mode: string, stats: GameStats): PersonalBests {
         existing.perfect = {
           ...existing.perfect,
           gamesPlayed: (existing.perfect?.gamesPlayed || 0) + 1
+        };
+      }
+      break;
+    case 'zen':
+      if (!existing.zen || stats.correctCount > (existing.zen.highScore || 0)) {
+        existing.zen = {
+          ...existing.zen,
+          highScore: stats.correctCount,
+          bestAccuracy: Math.max(stats.accuracy, existing.zen?.bestAccuracy || 0),
+          gamesPlayed: (existing.zen?.gamesPlayed || 0) + 1
+        };
+      } else {
+        existing.zen = {
+          ...existing.zen,
+          gamesPlayed: (existing.zen?.gamesPlayed || 0) + 1
         };
       }
       break;

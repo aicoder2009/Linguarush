@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react';
 import { formatShareableResults } from '../services/resultsFormatter';
 import { saveScore, type GameStats } from '../services/scoreManager';
+import { saveGameToHistory } from '../services/gameHistory';
+import { saveSessionToHistory } from '../services/roundTimeTracker';
 
 interface ResultsScreenProps {
   gameData: {
     mode: string;
+    difficulty: string;
     time: number;
     answers: Array<{
       questionId: number;
@@ -55,6 +58,18 @@ export default function ResultsScreen({ gameData, onPlayAgain, onMenu }: Results
 
     setStats(calculatedStats);
     saveScore(gameData.mode, calculatedStats);
+    saveSessionToHistory();
+
+    const score = correctCount * 100 + (accuracy === 100 ? 500 : 0);
+    saveGameToHistory({
+      mode: gameData.mode,
+      difficulty: gameData.difficulty,
+      correctCount,
+      totalCount,
+      accuracy,
+      totalTime,
+      score,
+    });
   }, [gameData]);
 
   const handleShare = () => {
@@ -71,18 +86,14 @@ export default function ResultsScreen({ gameData, onPlayAgain, onMenu }: Results
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#F5F4ED] p-6">
       <div className="w-full max-w-md">
-        <div className="bg-[#FFDA57] rounded-3xl p-8 border-4 border-white shadow-lg relative overflow-hidden">
-          {/* Decorative stars */}
-          <div className="absolute top-4 right-4 text-white text-3xl">✦</div>
-          <div className="absolute bottom-4 left-4 text-white text-2xl">✦</div>
-
+        <div className="bg-[#FFDA57] rounded-2xl p-8 border-2 border-amber-300 shadow-lg relative overflow-hidden">
           <h1 className="text-4xl font-black text-center mb-8">
             You Scored
             <br />
             {stats.accuracy}%!
           </h1>
 
-          <div className="bg-white rounded-2xl p-6 mb-6">
+          <div className="bg-white rounded-xl p-6 mb-6">
             <div className="text-center mb-4">
               <p className="text-lg font-bold mb-2">
                 {stats.correctCount} / {stats.totalCount} Correct
@@ -100,7 +111,6 @@ export default function ResultsScreen({ gameData, onPlayAgain, onMenu }: Results
               ))}
             </div>
 
-            {/* Detailed answer breakdown */}
             <div className="max-h-48 overflow-y-auto space-y-2">
               {gameData.answers.map((answer, i) => {
                 const question = gameData.questions[i];
@@ -136,21 +146,21 @@ export default function ResultsScreen({ gameData, onPlayAgain, onMenu }: Results
           <div className="flex flex-col gap-3">
             <button
               onClick={onPlayAgain}
-              className="w-full bg-black text-white font-bold py-4 px-6 rounded-full hover:bg-gray-900 transition-colors"
+              className="w-full bg-black text-white font-bold py-4 px-6 rounded-xl hover:bg-gray-900 transition-colors"
             >
-              Play Again ▶
+              Play Again
             </button>
 
             <button
               onClick={handleShare}
-              className="w-full bg-white text-black font-bold py-4 px-6 rounded-full hover:bg-gray-100 transition-colors"
+              className="w-full bg-white text-black font-bold py-4 px-6 rounded-xl hover:bg-gray-100 transition-colors border border-gray-200"
             >
-              {copied ? '✓ Copied!' : 'Share Results'}
+              {copied ? 'Copied!' : 'Share Results'}
             </button>
 
             <button
               onClick={onMenu}
-              className="w-full bg-[#00917A] text-white font-bold py-4 px-6 rounded-full hover:bg-[#007a68] transition-colors"
+              className="w-full bg-emerald-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Back to Home
             </button>

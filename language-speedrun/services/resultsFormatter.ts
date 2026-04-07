@@ -13,7 +13,8 @@ export function formatShareableResults(gameData: GameData, stats: GameStats): st
     sprint: 'Sprint 🏃',
     timeattack: 'Time Attack ⏰',
     endless: 'Endless ♾️',
-    perfect: 'Perfect Run 💎'
+    perfect: 'Perfect Run 💎',
+    zen: 'Zen 🧘'
   };
 
   const checkmarks = gameData.answers
@@ -26,6 +27,6 @@ export function formatShareableResults(gameData: GameData, stats: GameStats): st
 
 ${checkmarks}
 
-Play at: [YOUR_URL_HERE]
+Play Linguarush!
   `.trim();
 }

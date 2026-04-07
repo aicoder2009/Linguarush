@@ -144,3 +144,8 @@ export function getPlayerRank(username: string): number {
   const index = leaderboard.findIndex(entry => entry.username === username);
   return index >= 0 ? index + 1 : -1;
 }
+
+export function getPlayerStats(username: string): LeaderboardEntry | null {
+  const leaderboard = getLeaderboard();
+  return leaderboard.find(entry => entry.username === username) || null;
+}

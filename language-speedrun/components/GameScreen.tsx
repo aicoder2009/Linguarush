@@ -12,6 +12,7 @@ interface GameScreenProps {
   difficulty: string;
   onFinish: (results: {
     mode: string;
+    difficulty: string;
     time: number;
     answers: Array<{ questionId: number; userAnswer: string; correctAnswer: string; isCorrect: boolean; timeSpent: number }>;
     questions: Array<{ id: number; text: string; correctAnswer: string; acceptableAnswers: string[] }>;
@@ -55,13 +56,14 @@ export default function GameScreen({ mode, difficulty, onFinish, onQuit }: GameS
       setTimeout(() => {
         onFinish({
           mode,
+          difficulty,
           time,
           answers: gameState.answers,
           questions: questions
         });
       }, 1500);
     }
-  }, [gameState.status, mode, time, gameState.answers, questions, onFinish]);
+  }, [gameState.status, mode, difficulty, time, gameState.answers, questions, onFinish]);
 
   // Keyboard shortcuts
   useEffect(() => {

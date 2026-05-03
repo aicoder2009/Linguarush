@@ -1,6 +1,6 @@
 # Linguarush
 
-**Live:** https://linguarush.vercel.app
+**Live:** https://language-speedrun.vercel.app
 
 A Wordle-style game challenging players to recognize languages from text excerpts across 20+ languages with multiple modes.
 

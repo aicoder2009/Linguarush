@@ -1,11 +1,3 @@
-# Linguarush
-
-**Live:** https://language-speedrun.vercel.app
-
-A Wordle-style game challenging players to recognize languages from text excerpts across 20+ languages with multiple modes.
-
----
-
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

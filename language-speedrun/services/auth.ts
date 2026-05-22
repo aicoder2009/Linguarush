@@ -134,7 +134,7 @@ export async function createGuestUser(tempUsername: string): Promise<{ success: 
     setCurrentUser(guestUser);
 
     return { success: true };
-  } catch (error) {
+  } catch {
     // Fallback to local-only if API fails
     const guestUser: User = {
       username,

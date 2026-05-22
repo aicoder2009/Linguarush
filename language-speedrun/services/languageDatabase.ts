@@ -1,4 +1,4 @@
-import { languages, type Language } from '../data/languages';
+import { languages } from '../data/languages';
 
 export interface Question {
   id: number;

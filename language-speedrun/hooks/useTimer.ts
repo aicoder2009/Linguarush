@@ -21,7 +21,7 @@ export function useTimer(isRunning: boolean) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning]);
+  }, [isRunning, time]);
 
   const formatTime = () => {
     const totalSeconds = Math.floor(time / 1000);

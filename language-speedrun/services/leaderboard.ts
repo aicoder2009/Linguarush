@@ -22,7 +22,7 @@ export function getCurrentUser(): string {
       const auth = JSON.parse(authData);
       return auth.username || 'Anonymous';
     }
-  } catch (e) {
+  } catch {
     // Fall back to legacy user key
   }
 

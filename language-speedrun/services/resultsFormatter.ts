@@ -4,7 +4,11 @@ export interface GameData {
   mode: string;
   time: number;
   answers: Array<{
+    questionId?: number;
+    userAnswer?: string;
+    correctAnswer?: string;
     isCorrect: boolean;
+    timeSpent?: number;
   }>;
 }
 

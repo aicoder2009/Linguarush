@@ -17,6 +17,7 @@ export interface GameState {
   startTime: number | null;
   endTime: number | null;
   timeRemaining?: number; // For time attack mode (in milliseconds)
+  cumulativeTime: number; // Track cumulative time for performance
 }
 
 export function useGameState(mode: string, questions: Question[]) {
@@ -33,7 +34,8 @@ export function useGameState(mode: string, questions: Question[]) {
     lives: getLivesForMode(mode),
     startTime: null,
     endTime: null,
-    timeRemaining: mode === 'timeattack' ? 60000 : undefined // 60 seconds for time attack
+    timeRemaining: mode === 'timeattack' ? 60000 : undefined, // 60 seconds for time attack
+    cumulativeTime: 0
   });
 
   const startGame = useCallback(() => {
@@ -44,7 +46,8 @@ export function useGameState(mode: string, questions: Question[]) {
       lives: getLivesForMode(mode),
       startTime: Date.now(),
       endTime: null,
-      timeRemaining: mode === 'timeattack' ? 60000 : undefined
+      timeRemaining: mode === 'timeattack' ? 60000 : undefined,
+      cumulativeTime: 0
     });
   }, [mode]);
 
@@ -76,13 +79,15 @@ export function useGameState(mode: string, questions: Question[]) {
       acceptable => acceptable.toLowerCase() === userAnswer.toLowerCase()
     );
 
+    // Calculate time spent using tracked cumulative time (avoids O(n) reduce)
+    const timeSpent = Date.now() - (gameState.startTime || 0) - gameState.cumulativeTime;
+
     const answerRecord: Answer = {
       questionId: currentQuestion.id,
       userAnswer,
       correctAnswer: currentQuestion.correctAnswer,
       isCorrect,
-      timeSpent: Date.now() - (gameState.startTime || 0) -
-                gameState.answers.reduce((sum, a) => sum + a.timeSpent, 0)
+      timeSpent
     };
 
     const newAnswers = [...gameState.answers, answerRecord];
@@ -96,7 +101,8 @@ export function useGameState(mode: string, questions: Question[]) {
         answers: newAnswers,
         lives: newLives,
         status: 'finished',
-        endTime: Date.now()
+        endTime: Date.now(),
+        cumulativeTime: prev.cumulativeTime + timeSpent
       }));
       return { finished: true, isCorrect };
     } else {
@@ -104,7 +110,8 @@ export function useGameState(mode: string, questions: Question[]) {
         ...prev,
         answers: newAnswers,
         lives: newLives,
-        currentQuestionIndex: prev.currentQuestionIndex + 1
+        currentQuestionIndex: prev.currentQuestionIndex + 1,
+        cumulativeTime: prev.cumulativeTime + timeSpent
       }));
       return { finished: false, isCorrect };
     }

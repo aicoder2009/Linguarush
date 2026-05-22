@@ -5,14 +5,23 @@ export function getAutocompleteSuggestions(input: string, languages: Language[])
 
   const normalized = input.toLowerCase().trim();
 
-  const matches = languages.filter(lang =>
-    lang.name.toLowerCase().startsWith(normalized) ||
-    lang.acceptableAnswers.some(ans => ans.toLowerCase().startsWith(normalized))
-  );
+  // Pre-compute lowercase values to avoid repeated toLowerCase() calls
+  const matches = languages.filter(lang => {
+    const langNameLower = lang.name.toLowerCase();
+    if (langNameLower.startsWith(normalized)) return true;
+    
+    // Check acceptable answers
+    for (const ans of lang.acceptableAnswers) {
+      if (ans.toLowerCase().startsWith(normalized)) return true;
+    }
+    return false;
+  });
 
   matches.sort((a, b) => {
-    const aExact = a.name.toLowerCase() === normalized;
-    const bExact = b.name.toLowerCase() === normalized;
+    const aNameLower = a.name.toLowerCase();
+    const bNameLower = b.name.toLowerCase();
+    const aExact = aNameLower === normalized;
+    const bExact = bNameLower === normalized;
     if (aExact && !bExact) return -1;
     if (!aExact && bExact) return 1;
     return a.name.localeCompare(b.name);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useTimer } from '../hooks/useTimer';
 import { generateQuestions } from '../services/languageDatabase';
@@ -143,6 +143,36 @@ export default function GameScreen({ mode, difficulty, onFinish, onQuit }: GameS
     }, 1500);
   }, [questions, gameState.currentQuestionIndex, submitAnswer, roundStartTime, comboStreak, currentScore]);
 
+  // Memoize expensive calculations
+  const progressSegments = useMemo(() => 
+    Array.from({ length: questions.length }, (_, i) => {
+      if (i < gameState.currentQuestionIndex) return 'bg-blue-400';
+      if (i === gameState.currentQuestionIndex) return 'bg-blue-400';
+      return 'bg-gray-300';
+    }),
+    [questions.length, gameState.currentQuestionIndex]
+  );
+
+  // Memoize timer display calculation
+  const timerDisplay = useMemo(() => {
+    if (mode === 'timeattack' && gameState.timeRemaining !== undefined) {
+      const seconds = Math.ceil(gameState.timeRemaining / 1000);
+      return `${seconds}s`;
+    }
+    return formatTime();
+  }, [mode, gameState.timeRemaining, formatTime]);
+
+  // Memoize timer styling
+  const timerClassName = useMemo(() => {
+    const isLowTime = mode === 'timeattack' && 
+      gameState.timeRemaining !== undefined && 
+      Math.ceil(gameState.timeRemaining / 1000) <= 10;
+    
+    return `font-black italic ${
+      isLowTime ? 'text-6xl text-red-600 animate-pulse' : 'text-6xl text-gray-900'
+    }`;
+  }, [mode, gameState.timeRemaining]);
+
   if (gameState.status === 'ready' || questions.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -152,22 +182,6 @@ export default function GameScreen({ mode, difficulty, onFinish, onQuit }: GameS
   }
 
   const currentQuestion = questions[gameState.currentQuestionIndex];
-
-  // Progress segments
-  const progressSegments = Array.from({ length: questions.length }, (_, i) => {
-    if (i < gameState.currentQuestionIndex) return 'bg-blue-400';
-    if (i === gameState.currentQuestionIndex) return 'bg-blue-400';
-    return 'bg-gray-300';
-  });
-
-  // Format timer display
-  const getTimerDisplay = () => {
-    if (mode === 'timeattack' && gameState.timeRemaining !== undefined) {
-      const seconds = Math.ceil(gameState.timeRemaining / 1000);
-      return `${seconds}s`;
-    }
-    return formatTime();
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F4ED] p-6 relative">
@@ -308,12 +322,8 @@ export default function GameScreen({ mode, difficulty, onFinish, onQuit }: GameS
         {/* Timer Display - Prominent (hide for zen mode) */}
         {mode !== 'zen' && (
           <div className="text-center mb-6">
-            <div className={`font-black italic ${
-              mode === 'timeattack' && gameState.timeRemaining !== undefined && Math.ceil(gameState.timeRemaining / 1000) <= 10
-                ? 'text-6xl text-red-600 animate-pulse'
-                : 'text-6xl text-gray-900'
-            }`}>
-              {getTimerDisplay()}
+            <div className={timerClassName}>
+              {timerDisplay}
             </div>
           </div>
         )}
